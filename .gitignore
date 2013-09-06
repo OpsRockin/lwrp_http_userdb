@@ -3,4 +3,4 @@
 .ruby-version
 backup/
 cache/
-etc/
+var/
