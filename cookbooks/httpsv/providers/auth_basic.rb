@@ -1,10 +1,13 @@
 require 'webrick'
 
-action :create do
-  Chef::Log.warn "====== Create http_auth user #{@new_resource.user}"
+def whyrun_supported?
+  true
+end
 
-  htpasswd = WEBrick::HTTPAuth::Htpasswd.new(@new_resource.name)
-  htpasswd.set_passwd nil, @new_resource.user, @new_resource.password
-  htpasswd.flush
-  @new_resource.updated_by_last_action(true)
+action :create do
+  converge_by("====== Create http_auth user #{@new_resource.user}") do
+    htpasswd = WEBrick::HTTPAuth::Htpasswd.new(@new_resource.name)
+    htpasswd.set_passwd nil, @new_resource.user, @new_resource.password
+    htpasswd.flush
+  end
 end
