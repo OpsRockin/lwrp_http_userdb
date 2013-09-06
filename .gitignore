@@ -1,0 +1,6 @@
+*.swp
+.ruby-gemset
+.ruby-version
+backup/
+cache/
+etc/
