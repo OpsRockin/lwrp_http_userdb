@@ -19,7 +19,6 @@ action :create do
   else
     converge_by("====== Create http_auth user #{@new_resource.user}") do
       Chef::Log.warn "====== Create http_auth user #{@new_resource.user}"
-      backup!
       update_user!
     end
   end
@@ -37,6 +36,7 @@ action :delete do
 end
 
 def update_user!
+  backup!
   htpasswd = WEBrick::HTTPAuth::Htpasswd.new(@new_resource.path)
   htpasswd.set_passwd nil, @new_resource.user, @new_resource.password
   htpasswd.flush
@@ -44,6 +44,7 @@ def update_user!
 end
 
 def delete_user!
+  backup!
   htpasswd = WEBrick::HTTPAuth::Htpasswd.new(@new_resource.path)
   htpasswd.delete_passwd nil, @new_resource.user
   htpasswd.flush
@@ -52,6 +53,15 @@ end
 
 def fix_permission!
   FileUtils.chmod(@new_resource.filemode.to_i, @new_resource.path)
+end
+
+def backup!
+  htpasswd_file = Chef::Resource::File.new(@new_resource.path)
+#  htpasswd_file.instance_variable_set(:@backup, 30)
+  backup = Chef::Util::Backup.new(htpasswd_file)
+#  backup.send(:backup_filename)
+#  backup.instance_variable_set(:@backup_filename,backup.instance_variable_get(:@backup_filename).gsub(/[\d]+$/,Time.now.strftime("%Y%m%d%H%M%S.%6N")))
+  backup.backup!
 end
 
 def load_current_resource
