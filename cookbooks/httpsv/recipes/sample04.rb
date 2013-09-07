@@ -1,14 +1,16 @@
 # coding: utf-8
-
 base_dir = ENV['PWD']
-
 file_path = File.join(base_dir, 'var/www/site1/.htpasswd')
 
+def mode_to_log(file_path)
+  Chef::Log.warn "========= new resource mode is " + resources("file[#{file_path}]").mode
+end
+
 ## >> レシピ部分
-file file_path do ; mode 0660 ; end
-file file_path do ; mode 0666 ; end
-file file_path do ; mode 0644 ; end
-file file_path do ; mode 0640 ; end
+file file_path do ; mode '0660' ; end ; mode_to_log(file_path)
+file file_path do ; mode '0666' ; end ; mode_to_log(file_path)
+file file_path do ; mode '0644' ; end ; mode_to_log(file_path)
+file file_path do ; mode '0640' ; end ; mode_to_log(file_path)
 ## << レシピ部分
 
 require 'chef/handler'
