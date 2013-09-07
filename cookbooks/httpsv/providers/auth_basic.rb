@@ -57,10 +57,10 @@ end
 
 def backup!
   htpasswd_file = Chef::Resource::File.new(@new_resource.path)
-#  htpasswd_file.instance_variable_set(:@backup, 30)
+  htpasswd_file.instance_variable_set(:@backup, 30)
   backup = Chef::Util::Backup.new(htpasswd_file)
-#  backup.send(:backup_filename)
-#  backup.instance_variable_set(:@backup_filename,backup.instance_variable_get(:@backup_filename).gsub(/[\d]+$/,Time.now.strftime("%Y%m%d%H%M%S.%6N")))
+  backup.send(:backup_filename)
+  backup.instance_variable_set(:@backup_filename,backup.instance_variable_get(:@backup_filename).gsub(/[\d]+$/,Time.now.strftime("%Y%m%d%H%M%S.%6N")))
   backup.backup!
 end
 
