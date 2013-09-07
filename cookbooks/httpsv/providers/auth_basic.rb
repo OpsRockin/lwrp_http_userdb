@@ -13,21 +13,45 @@ action :create do
     else
       converge_by("====== Update http_auth user #{@new_resource.user}") do
         Chef::Log.warn "====== Update http_auth user #{@new_resource.user}"
-        flush_userdb!
+        update_user!
       end
     end
   else
     converge_by("====== Create http_auth user #{@new_resource.user}") do
       Chef::Log.warn "====== Create http_auth user #{@new_resource.user}"
-      flush_userdb!
+      backup!
+      update_user!
     end
   end
 end
 
-def flush_userdb!
+action :delete do
+  unless @current_resource.crypted_passwd
+    Chef::Log.warn "====== http_auth user #{@new_resource.user} was not found. Nothing to do. (up to date)"
+  else
+    converge_by("====== Delete http_auth user #{@new_resource.user}") do
+      Chef::Log.warn "====== Delete http_auth user #{@new_resource.user}"
+      delete_user!
+    end
+  end
+end
+
+def update_user!
   htpasswd = WEBrick::HTTPAuth::Htpasswd.new(@new_resource.path)
   htpasswd.set_passwd nil, @new_resource.user, @new_resource.password
   htpasswd.flush
+  fix_permission!
+end
+
+def delete_user!
+  htpasswd = WEBrick::HTTPAuth::Htpasswd.new(@new_resource.path)
+  htpasswd.delete_passwd nil, @new_resource.user
+  htpasswd.flush
+  fix_permission!
+end
+
+def fix_permission!
+  FileUtils.chmod(@new_resource.filemode.to_i, @new_resource.path)
 end
 
 def load_current_resource
