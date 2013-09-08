@@ -35,6 +35,17 @@ action :delete do
   end
 end
 
+action :discard do
+  if @current_resource.db_exists
+    converge_by("====== Discard http_auth userdb #{@new_resource.path}") do
+      backup!
+      ::File.unlink(@new_resource.path)
+    end
+  else
+    Chef::Log.warn "====== http_auth user database #{@new_resource.path} was not found. Nothing to do. (up to date)"
+  end
+end
+
 def update_user!
   backup!
   htpasswd = WEBrick::HTTPAuth::Htpasswd.new(@new_resource.path)
@@ -66,6 +77,12 @@ end
 
 def load_current_resource
   @current_resource = Chef::Resource::HttpsvAuthBasic.new(@new_resource.name)
+  unless ::File.exists?(@new_resource.path)
+    @current_resource.db_exists = false
+    @current_resource.crypted_passwd = nil
+    return
+  end
   htpasswd = WEBrick::HTTPAuth::Htpasswd.new(@new_resource.path)
   @current_resource.crypted_passwd = htpasswd.get_passwd nil, @new_resource.user, true
+  @current_resource.db_exists = true
 end
